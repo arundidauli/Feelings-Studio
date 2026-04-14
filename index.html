@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feelings Studio — Say it beautifully</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
+<style>
+  :root {
+    --midnight: #0d0d1a;
+    --deep: #13111f;
+    --surface: #1a1729;
+    --card: #201d30;
+    --border: rgba(255,255,255,0.07);
+    --border-glow: rgba(212,160,120,0.25);
+    --gold: #d4a078;
+    --gold-light: #e8c4a0;
+    --blush: #e8a0b0;
+    --blush-dark: #c47090;
+    --lavender: #a090d0;
+    --cream: #f5ede0;
+    --text: #f0e8e0;
+    --text-muted: rgba(240,232,224,0.55);
+    --text-hint: rgba(240,232,224,0.3);
+    --green: #88c8a8;
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--midnight);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── AMBIENT BACKGROUND ─── */
+  .ambient {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.18;
+    animation: drift 12s ease-in-out infinite alternate;
+  }
+  .blob-1 { width: 500px; height: 500px; background: var(--blush); top: -150px; left: -100px; animation-duration: 14s; }
+  .blob-2 { width: 400px; height: 400px; background: var(--gold); top: 30%; right: -120px; animation-duration: 18s; animation-delay: -5s; }
+  .blob-3 { width: 350px; height: 350px; background: var(--lavender); bottom: -100px; left: 20%; animation-duration: 16s; animation-delay: -8s; }
+  @keyframes drift {
+    from { transform: translate(0,0) scale(1); }
+    to { transform: translate(30px, 20px) scale(1.08); }
+  }
+
+  /* ─── LAYOUT ─── */
+  .wrap { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 0 20px 80px; }
+
+  /* ─── HEADER ─── */
+  .header {
+    padding: 48px 0 36px;
+    text-align: center;
+  }
+  .logo-mark {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid var(--border);
+    border-radius: 50px;
+    padding: 6px 18px 6px 12px;
+    margin-bottom: 28px;
+    backdrop-filter: blur(10px);
+  }
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--blush), var(--gold));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-icon svg { width: 14px; height: 14px; }
+  .logo-text { font-size: 13px; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 400; }
+
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(38px, 8vw, 52px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--cream);
+  }
+  .header h1 em { font-style: italic; color: var(--gold-light); }
+  .header p {
+    margin-top: 14px;
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 320px;
+    margin-left: auto; margin-right: auto;
+  }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(20px);
+    transition: border-color 0.3s;
+  }
+  .card:hover { border-color: var(--border-glow); }
+
+  .card-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-hint);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-label::after {
+    content: '';
+    flex: 1; height: 0.5px;
+    background: var(--border);
+  }
+
+  /* ─── FIELDS ─── */
+  .field { margin-bottom: 20px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    letter-spacing: 0.04em;
+  }
+  .field input, .field textarea, .field select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.25s, background 0.25s;
+    appearance: none;
+  }
+  .field textarea { resize: none; min-height: 80px; line-height: 1.6; }
+  .field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(240,232,224,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color: rgba(212,160,120,0.5);
+    background: rgba(212,160,120,0.05);
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--text-hint); }
+  .field select option { background: #1a1729; }
+
+  /* ─── TONE PILLS ─── */
+  .tone-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tone-pill {
+    padding: 7px 16px;
+    border-radius: 50px;
+    border: 0.5px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tone-pill:hover { border-color: var(--gold); color: var(--gold-light); }
+  .tone-pill.active {
+    background: linear-gradient(135deg, rgba(212,160,120,0.2), rgba(232,160,176,0.2));
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+
+  /* ─── QUESTION PICKER ─── */
+  .question-list { display: flex; flex-direction: column; gap: 8px; }
+  .q-item {
+    padding: 13px 16px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.5;
+  }
+  .q-item:hover { border-color: rgba(232,160,176,0.4); color: var(--text); background: rgba(232,160,176,0.05); }
+  .q-item.active {
+    border-color: var(--blush-dark);
+    background: rgba(232,160,176,0.1);
+    color: var(--text);
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold), var(--blush));
+    color: #1a0f0a;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(212,160,120,0.25); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-ghost {
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+
+  /* ─── SHARE PANEL ─── */
+  .share-panel {
+    display: none;
+    background: linear-gradient(135deg, rgba(212,160,120,0.08), rgba(232,160,176,0.08));
+    border: 0.5px solid var(--border-glow);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 16px;
+    animation: fadeUp 0.4s ease;
+  }
+  .share-panel.visible { display: block; }
+
+  .share-url {
+    background: rgba(0,0,0,0.3);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 12px;
+    color: var(--gold);
+    word-break: break-all;
+    margin: 16px 0;
+    font-family: monospace;
+    letter-spacing: 0.02em;
+  }
+
+  .share-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .share-btn {
+    padding: 13px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+  .share-btn-wa { background: rgba(37,211,102,0.1); border-color: rgba(37,211,102,0.25); color: #4dcc7a; }
+  .share-btn-wa:hover { background: rgba(37,211,102,0.18); }
+  .share-btn-copy { background: rgba(212,160,120,0.1); border-color: rgba(212,160,120,0.25); color: var(--gold); }
+  .share-btn-copy:hover { background: rgba(212,160,120,0.18); }
+
+  /* ─── RECEIVER VIEW ─── */
+  #receiver-view { display: none; }
+  #receiver-view.active { display: block; }
+
+  .receiver-hero {
+    text-align: center;
+    padding: 48px 0 32px;
+    animation: fadeUp 0.6s ease;
+  }
+  .receiver-from {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-hint);
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid var(--border);
+    padding: 5px 14px; border-radius: 50px;
+    margin-bottom: 24px;
+  }
+  .receiver-from span { color: var(--gold-light); font-weight: 400; }
+  .receiver-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 300;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .receiver-question {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(26px, 6vw, 36px);
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--cream);
+    padding: 0 8px;
+  }
+  .receiver-question em { color: var(--gold-light); font-style: italic; }
+  .question-react {
+    margin-top: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid var(--border);
+    color: var(--text-muted);
+    font-size: 12px;
+    animation: floaty 3s ease-in-out infinite;
+  }
+  .react-emoji {
+    font-size: 16px;
+    display: inline-block;
+    transform-origin: center;
+  }
+  .react-emoji.pop {
+    animation: reactPop 0.45s ease;
+  }
+  .receiver-helper {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-hint);
+    text-align: center;
+  }
+
+  .answer-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+  .answer-btn {
+    padding: 18px 22px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .answer-btn:hover { border-color: rgba(240,232,224,0.2); background: rgba(255,255,255,0.06); transform: translateX(4px); }
+
+  .answer-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot-yes { background: var(--green); }
+  .dot-soft { background: var(--gold); }
+  .dot-maybe { background: var(--lavender); }
+  .dot-later { background: var(--blush); }
+  .dot-no { background: rgba(240,232,224,0.2); }
+
+  .answer-main { font-size: 15px; color: var(--text); font-weight: 400; }
+  .answer-sub { font-size: 12px; color: var(--text-hint); margin-top: 2px; }
+
+  /* ─── OUTCOME SCREENS ─── */
+  .outcome {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    animation: fadeUp 0.5s ease;
+  }
+  .outcome.active { display: block; }
+
+  .outcome-icon {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+  }
+  .outcome-icon-yes { background: linear-gradient(135deg, rgba(136,200,168,0.2), rgba(136,200,168,0.1)); border: 1px solid rgba(136,200,168,0.3); }
+  .outcome-icon-maybe { background: linear-gradient(135deg, rgba(160,144,208,0.2), rgba(160,144,208,0.1)); border: 1px solid rgba(160,144,208,0.3); }
+  .outcome-icon-no { background: linear-gradient(135deg, rgba(212,160,120,0.2), rgba(212,160,120,0.1)); border: 1px solid rgba(212,160,120,0.3); }
+
+  .outcome h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px; font-weight: 400;
+    color: var(--cream); margin-bottom: 12px;
+  }
+  .outcome p { font-size: 15px; color: var(--text-muted); line-height: 1.7; max-width: 320px; margin: 0 auto 24px; }
+
+  .outcome-copy {
+    background: rgba(0,0,0,0.25);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-style: italic;
+    margin: 0 auto 24px;
+    max-width: 400px;
+    text-align: left;
+  }
+  .outcome-copy span { color: var(--gold-light); font-style: normal; }
+
+  /* Recovery options */
+  .recovery { margin-top: 8px; }
+  .recovery-label {
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-hint); margin-bottom: 12px;
+  }
+  .recovery-options { display: flex; flex-direction: column; gap: 8px; }
+  .recovery-option {
+    padding: 13px 16px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: rgba(212,160,120,0.05);
+    font-size: 13px; color: var(--gold-light);
+    cursor: pointer;
+    transition: all 0.2s; text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .recovery-option:hover { background: rgba(212,160,120,0.12); border-color: var(--border-glow); }
+  .recovery-option::before { content: '↩'; opacity: 0.5; flex-shrink: 0; }
+
+  /* ─── CONFETTI CANVAS ─── */
+  #confetti-canvas {
+    position: fixed; inset: 0; pointer-events: none; z-index: 100;
+  }
+
+  /* ─── STEP DOTS ─── */
+  .steps {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-bottom: 28px;
+  }
+  .step-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--border);
+    transition: all 0.3s;
+  }
+  .step-dot.active { background: var(--gold); transform: scale(1.3); }
+  .step-dot.done { background: rgba(136,200,168,0.6); }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes floaty {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
+  }
+  @keyframes reactPop {
+    0% { transform: scale(1) rotate(0deg); }
+    45% { transform: scale(1.28) rotate(-8deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+
+  .pulse-ring {
+    position: absolute; inset: -8px;
+    border-radius: 50%;
+    border: 1px solid var(--green);
+    animation: pulse-ring 1.8s ease-out infinite;
+  }
+
+  /* ─── DIVIDER ─── */
+  .or-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0;
+    font-size: 11px; color: var(--text-hint); letter-spacing: 0.08em;
+  }
+  .or-divider::before, .or-divider::after {
+    content: ''; flex: 1; height: 0.5px; background: var(--border);
+  }
+
+  /* ─── MEMORY INPUT (bonus feature) ─── */
+  .memory-pill {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: rgba(160,144,208,0.08);
+    border: 0.5px solid rgba(160,144,208,0.2);
+    border-radius: var(--radius-sm);
+    margin-top: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .memory-pill:hover { background: rgba(160,144,208,0.14); }
+  .memory-pill-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lavender); flex-shrink: 0; }
+  .memory-pill-text { font-size: 12px; color: var(--lavender); }
+
+  /* ─── PROGRESS BAR ─── */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--blush));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    text-align: center;
+    padding: 16px 0;
+    font-size: 11px;
+    color: var(--text-hint);
+    letter-spacing: 0.06em;
+  }
+
+  /* ─── CELEBRATION PARTICLES ─── */
+  .celebration-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 400px) {
+    .share-btns { grid-template-columns: 1fr; }
+    .tone-grid { gap: 6px; }
+    .tone-pill { font-size: 12px; padding: 6px 12px; }
+  }
+
+  /* ─── VIEW SWITCHER ─── */
+  #sender-view { display: block; }
+  .tab-bar {
+    display: flex;
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid var(--border);
+    border-radius: 50px;
+    padding: 4px;
+    margin-bottom: 28px;
+    gap: 4px;
+  }
+  .tab {
+    flex: 1;
+    padding: 9px;
+    border-radius: 50px;
+    font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.25s;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, rgba(212,160,120,0.25), rgba(232,160,176,0.25));
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  /* ─── HOVER GLOW ─── */
+  .answer-btn.yes-hover:hover { border-color: rgba(136,200,168,0.4); background: rgba(136,200,168,0.05); }
+  .answer-btn.soft-hover:hover { border-color: rgba(212,160,120,0.4); background: rgba(212,160,120,0.05); }
+  .answer-btn.maybe-hover:hover { border-color: rgba(160,144,208,0.4); background: rgba(160,144,208,0.05); }
+  .answer-btn.later-hover:hover { border-color: rgba(232,160,176,0.4); background: rgba(232,160,176,0.05); }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+<div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
+
+<div class="ambient">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+<div class="mood-bubbles" id="mood-bubbles" aria-hidden="true"></div>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-mark">
+      <div class="logo-icon">
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 12.5C7 12.5 1.5 9 1.5 5.5C1.5 3.567 3.067 2 5 2C5.997 2 6.895 2.43 7.524 3.115C7.524 3.115 7 4 7 5.5C7 4 6.476 3.115 6.476 3.115C7.105 2.43 8.003 2 9 2C10.933 2 12.5 3.567 12.5 5.5C12.5 9 7 12.5 7 12.5Z" fill="white" opacity="0.9"/>
+        </svg>
+      </div>
+      <span class="logo-text">Feelings Studio</span>
+    </div>
+    <h1>Say it<br><em>beautifully.</em></h1>
+    <p>Create a moment. Share a feeling. Let the answer find its own grace.</p>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('sender', this)">Send a feeling</button>
+    <button class="tab" onclick="switchTab('receiver', this)">I received a link</button>
+  </div>
+
+  <!-- ══════════════ SENDER VIEW ══════════════ -->
+  <div id="sender-view">
+
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="steps">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+      <div class="step-dot" id="dot-4"></div>
+    </div>
+
+    <!-- Step 1: Who -->
+    <div id="step-1" class="card" style="animation: fadeUp 0.4s ease;">
+      <div class="card-label">01 — About you &amp; them</div>
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="sender-name" placeholder="e.g. Priya" oninput="updateProgress()">
+      </div>
+      <div class="field">
+        <label>Language</label>
+        <select id="language" onchange="loadQuestions()">
+          <option value="hinglish" selected>Hinglish</option>
+          <option value="english">English</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Your WhatsApp number (optional, with country code)</label>
+        <input type="tel" id="sender-wa" placeholder="e.g. 919876543210">
+        <div style="font-size: 11px; color: var(--text-hint); margin-top: 6px;">
+          Add this if you want one-tap answer back in WhatsApp.
+        </div>
+      </div>
+      <div class="field">
+        <label>Their name</label>
+        <input type="text" id="receiver-name-input" placeholder="e.g. Arjun" oninput="updateProgress()">
+      </div>
+      <div class="field">
+        <label>For whom?</label>
+        <select id="target-style">
+          <option value="neutral" selected>Any / Neutral</option>
+          <option value="her">For Her</option>
+          <option value="him">For Him</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Your relationship</label>
+        <select id="relationship" onchange="loadQuestions(); updateProgress()">
+          <option value="">Choose relationship...</option>
+          <option value="partner">Partner / Boyfriend / Girlfriend</option>
+          <option value="spouse">Husband / Wife</option>
+          <option value="sibling">Brother / Sister</option>
+          <option value="parent">Parent / Child</option>
+          <option value="friend">Close Friend</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="goToStep(2)" style="margin-top: 4px;">Continue →</button>
+    </div>
+
+    <!-- Step 2: Tone + Question -->
+    <div id="step-2" class="card" style="display:none; animation: fadeUp 0.4s ease;">
+      <div class="card-label">02 — Set the tone</div>
+      <div class="tone-grid" id="tone-grid">
+        <div class="tone-pill" onclick="setTone(this, 'sweet')">Sweet</div>
+        <div class="tone-pill" onclick="setTone(this, 'playful')">Playful</div>
+        <div class="tone-pill" onclick="setTone(this, 'heartfelt')">Heartfelt</div>
+        <div class="tone-pill" onclick="setTone(this, 'gentle')">Gentle</div>
+        <div class="tone-pill" onclick="setTone(this, 'bold')">Bold</div>
+        <div class="tone-pill" onclick="setTone(this, 'nostalgic')">Nostalgic</div>
+      </div>
+
+      <div class="or-divider">pick a question</div>
+
+      <div class="question-list" id="question-list">
+        <div class="q-item" onclick="selectQ(this)">Choose a question after selecting your relationship above.</div>
+      </div>
+
+      <div class="or-divider">or write your own</div>
+
+      <div class="field">
+        <textarea id="custom-question" placeholder="Write what's on your heart..." rows="2" oninput="if(this.value.length>0){clearQSelection();} updateProgress();"></textarea>
+      </div>
+
+      <!-- Memory (bonus) -->
+      <div class="memory-pill" onclick="toggleMemory()">
+        <div class="memory-pill-dot"></div>
+        <div class="memory-pill-text">+ Add a memory or reason (makes it more personal)</div>
+      </div>
+      <div id="memory-field" style="display:none; margin-top: 12px;">
+        <div class="field">
+          <textarea id="memory-text" placeholder="e.g. Remember when we stayed up talking till 4am? That's the kind of moment I want more of." rows="3"></textarea>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px;">
+        <button class="btn btn-ghost" onclick="goToStep(1)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(3)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Preview + Generate -->
+    <div id="step-3" class="card" style="display:none; animation: fadeUp 0.4s ease;">
+      <div class="card-label">03 — Preview</div>
+
+      <div style="background: rgba(0,0,0,0.2); border: 0.5px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
+        <div style="font-size: 12px; color: var(--text-hint); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+          <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--blush);"></div>
+          What they'll see
+        </div>
+        <div style="font-family: 'Cormorant Garamond', serif; font-size: 13px; color: var(--text-muted); margin-bottom: 6px;" id="preview-from-line">From someone who cares about you</div>
+        <div style="font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--cream); line-height: 1.4;" id="preview-question-text">Your question will appear here.</div>
+        <div id="preview-memory-block" style="display:none; margin-top: 12px; font-size: 13px; color: var(--lavender); font-style: italic; line-height: 1.5;">
+          <span id="preview-memory-text"></span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button class="btn btn-ghost" onclick="goToStep(2)">← Back</button>
+        <button class="btn btn-primary" onclick="generateLink()">Generate link ✦</button>
+      </div>
+    </div>
+
+    <!-- Share panel -->
+    <div id="share-panel" class="share-panel">
+      <div style="text-align: center; margin-bottom: 4px;">
+        <div style="font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--cream);">Your link is ready ✦</div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Share it with <span id="link-for-name" style="color: var(--gold-light);"></span></div>
+      </div>
+      <div class="share-url" id="share-url-display"></div>
+      <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+        Example: You share this link in WhatsApp → your friend opens and selects an answer → they tap "Send answer back on WhatsApp" on outcome screen → you get the reply in your WhatsApp chat.
+      </div>
+      <div class="share-btns">
+        <button class="share-btn share-btn-wa" onclick="shareWhatsApp()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </button>
+        <button class="share-btn share-btn-copy" onclick="copyLink()" id="copy-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy link
+        </button>
+      </div>
+      <button class="btn btn-ghost" onclick="resetSender()" style="margin-top: 12px; font-size: 13px;">Create another →</button>
+    </div>
+
+  </div>
+  <!-- END SENDER VIEW -->
+
+  <!-- ══════════════ RECEIVER VIEW ══════════════ -->
+  <div id="receiver-view">
+
+    <!-- Hero question -->
+    <div class="receiver-hero" id="receiver-hero">
+      <div class="receiver-from">From <span id="r-sender-name">someone</span></div>
+      <div class="receiver-name" id="r-receiver-name"></div>
+      <div class="receiver-avatar" id="receiver-avatar">🧑</div>
+      <div class="receiver-question" id="r-question">Loading your moment...</div>
+      <div class="question-react" id="question-react">
+        <span class="react-emoji" id="react-emoji">💫</span>
+        <span id="react-text">Dil se pucho, dil se jawab do.</span>
+      </div>
+      <div id="r-memory-block" style="display:none; background: rgba(160,144,208,0.08); border: 0.5px solid rgba(160,144,208,0.2); border-radius: 14px; padding: 16px 18px; margin-top: 20px; font-size: 14px; color: var(--lavender); font-style: italic; line-height: 1.7; text-align: left;"></div>
+    </div>
+
+    <!-- Answer options -->
+    <div id="receiver-answers" class="card" style="animation: fadeUp 0.6s ease 0.2s both;">
+      <div class="card-label" id="answer-label">How do you feel?</div>
+      <div class="answer-grid">
+        <button class="answer-btn yes-hover" onclick="submitAnswer('yes')" onmouseenter="previewMood('yes')" onfocus="previewMood('yes')">
+          <div class="answer-dot dot-yes"></div>
+          <div><div class="answer-main" id="ans-yes-main">Yes, absolutely</div><div class="answer-sub" id="ans-yes-sub">I'm in. Let's make it happen.</div></div>
+        </button>
+        <button class="answer-btn soft-hover" onclick="submitAnswer('softyes')" onmouseenter="previewMood('softyes')" onfocus="previewMood('softyes')">
+          <div class="answer-dot dot-soft"></div>
+          <div><div class="answer-main" id="ans-softyes-main">Yes, but let's talk</div><div class="answer-sub" id="ans-softyes-sub">I want to, just need a moment to plan.</div></div>
+        </button>
+        <button class="answer-btn maybe-hover" onclick="submitAnswer('maybe')" onmouseenter="previewMood('maybe')" onfocus="previewMood('maybe')">
+          <div class="answer-dot dot-maybe"></div>
+          <div><div class="answer-main" id="ans-maybe-main">I'm not sure yet</div><div class="answer-sub" id="ans-maybe-sub">Give me a little time to think.</div></div>
+        </button>
+        <button class="answer-btn later-hover" onclick="submitAnswer('later')" onmouseenter="previewMood('later')" onfocus="previewMood('later')">
+          <div class="answer-dot dot-later"></div>
+          <div><div class="answer-main" id="ans-later-main">Not right now</div><div class="answer-sub" id="ans-later-sub">This isn't the right moment.</div></div>
+        </button>
+        <button class="answer-btn" onclick="handleNoAttempt()" onmouseenter="previewMood('no')" onfocus="previewMood('no')">
+          <div class="answer-dot dot-no"></div>
+          <div><div class="answer-main" id="ans-no-main">I need some space</div><div class="answer-sub" id="ans-no-sub">I still care, but I can't right now.</div></div>
+        </button>
+      </div>
+      <div class="receiver-helper" id="receiver-helper">Choose what feels real - no pressure.</div>
+
+      <div id="no-gentle-panel" class="no-gentle-panel" style="display:none;">
+        <div class="no-gentle-title">Before final no, want to choose a softer path?</div>
+        <div class="no-gentle-sub">No pressure. Pick what feels true for you.</div>
+        <div class="no-gentle-actions">
+          <button class="no-gentle-btn" onclick="submitAnswer('maybe')">I need more time</button>
+          <button class="no-gentle-btn" onclick="submitAnswer('later')">Not today, maybe later</button>
+          <button class="no-gentle-btn ghost" onclick="submitAnswer('no')">No, I still need space</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outcome: YES -->
+    <div id="outcome-yes" class="outcome card" style="display:none;">
+      <div style="position:relative; display:inline-block; margin-bottom: 24px;">
+        <div style="position:absolute; inset:-8px; border-radius:50%; border:1px solid var(--green); animation: pulse-ring 1.8s ease-out infinite;"></div>
+        <div class="outcome-icon outcome-icon-yes">✦</div>
+      </div>
+      <h2>They said <em style="color: var(--green); font-style: italic;">yes</em></h2>
+      <p id="outcome-yes-msg">Something wonderful is about to begin.</p>
+      <div class="outcome-copy" id="outcome-yes-copy"></div>
+      <button class="btn btn-ghost" onclick="copyReply('yes')">Copy reply ↗</button>
+      <button class="btn btn-primary" id="send-back-yes" onclick="sendReplyBack('yes')" style="display:none; margin-top: 10px;">Send answer back on WhatsApp</button>
+    </div>
+
+    <!-- Outcome: SOFT YES -->
+    <div id="outcome-softyes" class="outcome card" style="display:none;">
+      <div class="outcome-icon outcome-icon-yes" style="margin-bottom: 24px;">♡</div>
+      <h2>Almost a <em style="color: var(--gold-light); font-style: italic;">yes</em></h2>
+      <p>They want to, they just need to feel ready. That's a beautiful sign.</p>
+      <div class="outcome-copy" id="outcome-softyes-copy"></div>
+      <button class="btn btn-ghost" onclick="copyReply('softyes')">Copy reply ↗</button>
+      <button class="btn btn-primary" id="send-back-softyes" onclick="sendReplyBack('softyes')" style="display:none; margin-top: 10px;">Send answer back on WhatsApp</button>
+    </div>
+
+    <!-- Outcome: MAYBE -->
+    <div id="outcome-maybe" class="outcome card" style="display:none;">
+      <div class="outcome-icon outcome-icon-maybe" style="margin-bottom: 24px;">◎</div>
+      <h2>A <em style="color: var(--lavender); font-style: italic;">gentle</em> maybe</h2>
+      <p>They haven't said no. The door is still open — give it a little time.</p>
+      <div class="outcome-copy" id="outcome-maybe-copy"></div>
+      <button class="btn btn-ghost" onclick="copyReply('maybe')">Copy reply ↗</button>
+      <button class="btn btn-primary" id="send-back-maybe" onclick="sendReplyBack('maybe')" style="display:none; margin-top: 10px;">Send answer back on WhatsApp</button>
+    </div>
+
+    <!-- Outcome: LATER -->
+    <div id="outcome-later" class="outcome card" style="display:none;">
+      <div class="outcome-icon outcome-icon-maybe" style="margin-bottom: 24px;">◌</div>
+      <h2>Not <em style="color: var(--blush); font-style: italic;">right now</em></h2>
+      <p>The timing wasn't perfect. That's okay — feelings don't expire.</p>
+      <div class="outcome-copy" id="outcome-later-copy"></div>
+      <button class="btn btn-primary" id="send-back-later" onclick="sendReplyBack('later')" style="display:none; margin-bottom: 14px;">Send answer back on WhatsApp</button>
+      <div class="recovery">
+        <div class="recovery-label">Gentle ways to respond</div>
+        <div class="recovery-options">
+          <button class="recovery-option" onclick="copyRecovery('whenever')">Whenever you're ready, I'll be here.</button>
+          <button class="recovery-option" onclick="copyRecovery('understand')">I understand. No rush at all.</button>
+          <button class="recovery-option" onclick="copyRecovery('miss')">I just miss you. That's all this was.</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outcome: NO -->
+    <div id="outcome-no" class="outcome card" style="display:none;">
+      <div class="outcome-icon outcome-icon-no" style="margin-bottom: 24px;">○</div>
+      <h2>They need <em style="color: var(--gold-light); font-style: italic;">space</em></h2>
+      <p>Respect is love too. Give them what they asked for — it shows how much you care.</p>
+      <div class="outcome-copy" id="outcome-no-copy"></div>
+      <button class="btn btn-primary" id="send-back-no" onclick="sendReplyBack('no')" style="display:none; margin-bottom: 14px;">Send answer back on WhatsApp</button>
+      <div class="recovery">
+        <div class="recovery-label">How to respond with grace</div>
+        <div class="recovery-options">
+          <button class="recovery-option" onclick="copyRecovery('respect')">I completely understand. Take all the space you need.</button>
+          <button class="recovery-option" onclick="copyRecovery('care')">No pressure ever. I care about you — that doesn't change.</button>
+          <button class="recovery-option" onclick="copyRecovery('here')">I hear you. I'm here if you ever want to talk.</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- END RECEIVER VIEW -->
+
+  <div class="footer">made with care · feelings studio</div>
+</div>
+
+<script src="./questions.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

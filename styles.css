@@ -1,0 +1,199 @@
+.receiver-avatar {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  background: linear-gradient(135deg, rgba(232, 160, 176, 0.16), rgba(212, 160, 120, 0.16));
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: floaty 3s ease-in-out infinite;
+}
+
+body {
+  transition: background 0.6s ease, box-shadow 0.6s ease;
+}
+
+/* Floating background bubbles */
+.mood-bubbles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.mood-bubble {
+  position: absolute;
+  bottom: -120px;
+  border-radius: 50%;
+  filter: blur(1px);
+  opacity: 0.22;
+  animation: bubbleRise linear infinite;
+}
+
+@keyframes bubbleRise {
+  from {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.18;
+  }
+  80% {
+    opacity: 0.2;
+  }
+  to {
+    transform: translateY(-115vh) translateX(25px) scale(1.18);
+    opacity: 0;
+  }
+}
+
+/* Mood themes based on answer */
+body.mood-default {
+  background: #0d0d1a;
+}
+
+body.mood-yes {
+  background: radial-gradient(circle at 20% 10%, rgba(136, 200, 168, 0.2), transparent 45%),
+    radial-gradient(circle at 80% 90%, rgba(212, 160, 120, 0.14), transparent 42%),
+    #0d1218;
+}
+
+body.mood-softyes {
+  background: radial-gradient(circle at 15% 12%, rgba(232, 160, 176, 0.2), transparent 40%),
+    radial-gradient(circle at 88% 84%, rgba(212, 160, 120, 0.14), transparent 44%),
+    #12101a;
+}
+
+body.mood-maybe {
+  background: radial-gradient(circle at 18% 8%, rgba(160, 144, 208, 0.22), transparent 42%),
+    radial-gradient(circle at 82% 88%, rgba(232, 160, 176, 0.1), transparent 46%),
+    #111020;
+}
+
+body.mood-later {
+  background: radial-gradient(circle at 15% 9%, rgba(232, 160, 176, 0.16), transparent 42%),
+    radial-gradient(circle at 85% 92%, rgba(160, 144, 208, 0.13), transparent 45%),
+    #15101c;
+}
+
+body.mood-no {
+  background: radial-gradient(circle at 12% 10%, rgba(212, 160, 120, 0.14), transparent 42%),
+    radial-gradient(circle at 84% 88%, rgba(240, 232, 224, 0.08), transparent 44%),
+    #14131d;
+}
+
+.no-gentle-panel {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(212, 160, 120, 0.08);
+  border: 0.5px solid rgba(212, 160, 120, 0.28);
+  animation: fadeUp 0.28s ease;
+}
+
+.no-gentle-title {
+  font-size: 14px;
+  color: #f5ede0;
+  margin-bottom: 6px;
+}
+
+.no-gentle-sub {
+  font-size: 12px;
+  color: rgba(240, 232, 224, 0.7);
+  margin-bottom: 10px;
+}
+
+.no-gentle-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.no-gentle-btn {
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f0e8e0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.no-gentle-btn:hover {
+  border-color: rgba(212, 160, 120, 0.48);
+  background: rgba(212, 160, 120, 0.13);
+}
+
+.no-gentle-btn.ghost {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(240, 232, 224, 0.76);
+}
+
+/* Outcome effect layer */
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 90;
+  overflow: hidden;
+}
+
+.fx-heart {
+  position: absolute;
+  font-size: 18px;
+  animation: heartBurst 1.2s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes heartBurst {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  18% { opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(1.35); opacity: 0; }
+}
+
+.fx-shimmer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08), transparent 55%);
+  animation: shimmerPulse 1.6s ease-out forwards;
+}
+
+@keyframes shimmerPulse {
+  0% { opacity: 0; transform: scale(0.92); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+
+.fx-thought {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(200, 188, 255, 0.6);
+  animation: thoughtFloat 2.8s ease-out forwards;
+}
+
+@keyframes thoughtFloat {
+  0% { transform: translateY(0) scale(0.8); opacity: 0; }
+  20% { opacity: 0.7; }
+  100% { transform: translateY(-180px) scale(1.8); opacity: 0; }
+}
+
+.fx-calm {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(212,160,120,0.16), transparent 60%);
+  animation: calmFade 2.2s ease-out forwards;
+}
+
+@keyframes calmFade {
+  0% { opacity: 0; }
+  35% { opacity: 0.65; }
+  100% { opacity: 0; }
+}
