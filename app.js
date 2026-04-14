@@ -6,7 +6,11 @@ let senderWhatsapp = "";
 let latestReplyByType = {};
 let currentLang = "hinglish";
 let currentTargetStyle = "neutral";
+let currentRequestId = "";
 const moodClasses = ["mood-default", "mood-yes", "mood-softyes", "mood-maybe", "mood-later", "mood-no"];
+const DIRECT_ANSWER_API_URL = window.FEELINGS_ANSWER_API_URL || "";
+const SUPABASE_URL = window.FEELINGS_SUPABASE_URL || "";
+const SUPABASE_ANON_KEY = window.FEELINGS_SUPABASE_ANON_KEY || "";
 
 function switchTab(tab, tabEl) {
   document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
@@ -141,8 +145,10 @@ function generateLink() {
   const lang = document.getElementById("language").value || "hinglish";
   const target = document.getElementById("target-style").value || "neutral";
   const senderWa = document.getElementById("sender-wa").value.trim().replace(/[^\d]/g, "");
+  const reqId = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : `req_${Date.now()}`;
+  currentRequestId = reqId;
 
-  const params = new URLSearchParams({ from: sn, to: rn, rel, q, tone, lang, target });
+  const params = new URLSearchParams({ from: sn, to: rn, rel, q, tone, lang, target, req: reqId });
   if (senderWa) params.set("wa", senderWa);
   if (mem) params.set("mem", mem);
 
@@ -205,6 +211,7 @@ function loadReceiverFromURL() {
   const mem = params.get("mem") || "";
   currentLang = params.get("lang") || "hinglish";
   currentTargetStyle = params.get("target") || "neutral";
+  currentRequestId = params.get("req") || "";
   senderWhatsapp = (params.get("wa") || "").replace(/[^\d]/g, "");
 
   document.getElementById("r-sender-name").textContent = from;
@@ -224,6 +231,7 @@ function loadReceiverFromURL() {
   if (!params.get("from")) {
     currentLang = "hinglish";
     currentTargetStyle = "neutral";
+    currentRequestId = "";
     senderWhatsapp = "";
     document.getElementById("r-sender-name").textContent = "Priya";
     document.getElementById("r-receiver-name").textContent = "For Arjun";
@@ -439,11 +447,77 @@ function submitAnswer(type) {
 
   const sendBackBtn = document.getElementById("send-back-" + type);
   if (sendBackBtn) sendBackBtn.style.display = senderWhatsapp ? "block" : "none";
+  submitDirectAnswer(type, msg);
 
   if (type === "yes") launchConfetti();
   setMoodTheme(type);
   playOutcomeFx(type);
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function setDirectStatus(type, text) {
+  ["yes", "softyes", "maybe", "later", "no"].forEach((id) => {
+    const el = document.getElementById(`direct-save-status-${id}`);
+    if (el) el.textContent = id === type ? text : "";
+  });
+}
+
+async function submitDirectAnswer(type, answerText) {
+  const payload = {
+    request_id: currentRequestId || null,
+    answer_type: type,
+    answer_text: answerText,
+    sender_name: document.getElementById("r-sender-name")?.textContent || "",
+    receiver_name: (document.getElementById("r-receiver-name")?.textContent || "").replace("For ", ""),
+    question: document.getElementById("r-question")?.textContent || "",
+    lang: currentLang,
+    target: currentTargetStyle,
+    created_at: new Date().toISOString()
+  };
+
+  const hasSupabase = SUPABASE_URL && SUPABASE_ANON_KEY;
+  const hasCustomApi = DIRECT_ANSWER_API_URL;
+  if (!hasSupabase && !hasCustomApi) {
+    setDirectStatus(type, "Direct save is off. Configure Supabase or FEELINGS_ANSWER_API_URL.");
+    return;
+  }
+
+  setDirectStatus(type, "Saving answer...");
+  try {
+    let res;
+    if (hasSupabase) {
+      res = await fetch(`${SUPABASE_URL}/rest/v1/responses`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      res = await fetch(DIRECT_ANSWER_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: payload.request_id,
+          answerType: payload.answer_type,
+          answerText: payload.answer_text,
+          senderName: payload.sender_name,
+          receiverName: payload.receiver_name,
+          question: payload.question,
+          lang: payload.lang,
+          target: payload.target,
+          timestamp: payload.created_at
+        })
+      });
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    setDirectStatus(type, hasSupabase ? "Answer saved to Supabase." : "Answer saved directly in app backend.");
+  } catch (err) {
+    setDirectStatus(type, "Direct save failed. Receiver can still send via WhatsApp.");
+  }
 }
 
 function copyReply(type) {

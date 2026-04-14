@@ -807,6 +807,7 @@
       <h2>They said <em style="color: var(--green); font-style: italic;">yes</em></h2>
       <p id="outcome-yes-msg">Something wonderful is about to begin.</p>
       <div class="outcome-copy" id="outcome-yes-copy"></div>
+      <div class="direct-save-status" id="direct-save-status-yes"></div>
       <button class="btn btn-ghost" onclick="copyReply('yes')">Copy reply ↗</button>
       <button class="btn btn-primary" id="send-back-yes" onclick="sendReplyBack('yes')" style="display:none; margin-top: 10px;">Send answer back on WhatsApp</button>
     </div>
@@ -817,6 +818,7 @@
       <h2>Almost a <em style="color: var(--gold-light); font-style: italic;">yes</em></h2>
       <p>They want to, they just need to feel ready. That's a beautiful sign.</p>
       <div class="outcome-copy" id="outcome-softyes-copy"></div>
+      <div class="direct-save-status" id="direct-save-status-softyes"></div>
       <button class="btn btn-ghost" onclick="copyReply('softyes')">Copy reply ↗</button>
       <button class="btn btn-primary" id="send-back-softyes" onclick="sendReplyBack('softyes')" style="display:none; margin-top: 10px;">Send answer back on WhatsApp</button>
     </div>
@@ -827,6 +829,7 @@
       <h2>A <em style="color: var(--lavender); font-style: italic;">gentle</em> maybe</h2>
       <p>They haven't said no. The door is still open — give it a little time.</p>
       <div class="outcome-copy" id="outcome-maybe-copy"></div>
+      <div class="direct-save-status" id="direct-save-status-maybe"></div>
       <button class="btn btn-ghost" onclick="copyReply('maybe')">Copy reply ↗</button>
       <button class="btn btn-primary" id="send-back-maybe" onclick="sendReplyBack('maybe')" style="display:none; margin-top: 10px;">Send answer back on WhatsApp</button>
     </div>
@@ -837,6 +840,7 @@
       <h2>Not <em style="color: var(--blush); font-style: italic;">right now</em></h2>
       <p>The timing wasn't perfect. That's okay — feelings don't expire.</p>
       <div class="outcome-copy" id="outcome-later-copy"></div>
+      <div class="direct-save-status" id="direct-save-status-later"></div>
       <button class="btn btn-primary" id="send-back-later" onclick="sendReplyBack('later')" style="display:none; margin-bottom: 14px;">Send answer back on WhatsApp</button>
       <div class="recovery">
         <div class="recovery-label">Gentle ways to respond</div>
@@ -854,6 +858,7 @@
       <h2>They need <em style="color: var(--gold-light); font-style: italic;">space</em></h2>
       <p>Respect is love too. Give them what they asked for — it shows how much you care.</p>
       <div class="outcome-copy" id="outcome-no-copy"></div>
+      <div class="direct-save-status" id="direct-save-status-no"></div>
       <button class="btn btn-primary" id="send-back-no" onclick="sendReplyBack('no')" style="display:none; margin-bottom: 14px;">Send answer back on WhatsApp</button>
       <div class="recovery">
         <div class="recovery-label">How to respond with grace</div>
@@ -868,10 +873,22 @@
   </div>
   <!-- END RECEIVER VIEW -->
 
-  <div class="footer">made with care · feelings studio</div>
+  <div class="footer">made with care · feelings studio · creator Arun Kumar · Full-Stack Mobile Engineer · 2x Anthropic Certified · Open to Remote</div>
 </div>
 
 <script src="./questions.js"></script>
+<script>
+  // Option A (recommended): Supabase direct save
+  // Example:
+  // window.FEELINGS_SUPABASE_URL = "https://xxxx.supabase.co";
+  // window.FEELINGS_SUPABASE_ANON_KEY = "your-anon-key";
+  window.FEELINGS_SUPABASE_URL = window.FEELINGS_SUPABASE_URL || "https://txopzsjqhtihgjuwkdqt.supabase.co";
+  window.FEELINGS_SUPABASE_ANON_KEY = window.FEELINGS_SUPABASE_ANON_KEY || "PASTE_YOUR_SUPABASE_ANON_KEY_HERE";
+
+  // Option B: custom webhook endpoint for direct answer capture.
+  // Example: window.FEELINGS_ANSWER_API_URL = "https://your-api.com/feelings/answers";
+  window.FEELINGS_ANSWER_API_URL = window.FEELINGS_ANSWER_API_URL || "";
+</script>
 <script src="./app.js"></script>
 </body>
 </html>

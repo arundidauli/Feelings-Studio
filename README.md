@@ -74,6 +74,60 @@ Important:
 - If sender WhatsApp number is not added, receiver can still copy reply text.
 - Automatic silent notification is not available yet (needs backend/webhook).
 
+### Direct in-app answer capture (new)
+
+You can now send answers directly to your backend (without WhatsApp).
+
+#### Option A (recommended): Supabase
+
+Set these in `index.html`:
+
+- `window.FEELINGS_SUPABASE_URL = "https://xxxx.supabase.co"`
+- `window.FEELINGS_SUPABASE_ANON_KEY = "your-anon-key"`
+
+Then create table and security rules using SQL editor:
+
+```sql
+create table if not exists public.responses (
+  id uuid primary key default gen_random_uuid(),
+  request_id text,
+  answer_type text not null,
+  answer_text text not null,
+  sender_name text,
+  receiver_name text,
+  question text,
+  lang text,
+  target text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.responses enable row level security;
+
+create policy "allow_anon_insert_responses"
+on public.responses
+for insert
+to anon
+with check (true);
+```
+
+Important for safety:
+
+- Keep policy insert-only for anon.
+- Do not allow anon select/update/delete.
+
+#### Option B: Custom webhook
+
+`window.FEELINGS_ANSWER_API_URL = "https://your-api-endpoint"`
+
+How it works:
+
+- App generates a `requestId` in the shared link.
+- When receiver submits an answer, app sends POST payload.
+- Supabase payload fields: `request_id`, `answer_type`, `answer_text`, `sender_name`, `receiver_name`, `question`, `lang`, `target`, `created_at`.
+- Custom API payload fields: `requestId`, `answerType`, `answerText`, `senderName`, `receiverName`, `question`, `lang`, `target`, `timestamp`.
+
+If endpoint is not configured, app falls back to WhatsApp handoff flow.
+
 ### Outcome handling
 
 - positive answer triggers magical celebration animation
