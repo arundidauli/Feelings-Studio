@@ -558,6 +558,17 @@
     .tone-pill { font-size: 12px; padding: 6px 12px; }
   }
 
+  @media (max-width: 768px) {
+    :root {
+      --text-muted: rgba(240,232,224,0.8);
+      --text-hint: rgba(240,232,224,0.62);
+    }
+    .answer-main { font-size: 16px; font-weight: 500; }
+    .answer-sub { font-size: 13px; color: rgba(240,232,224,0.78); }
+    .receiver-helper { font-size: 13px; color: rgba(240,232,224,0.72); }
+    .field input, .field textarea, .field select { font-size: 16px; }
+  }
+
   /* ─── VIEW SWITCHER ─── */
   #sender-view { display: block; }
   .tab-bar {
@@ -644,11 +655,7 @@
 
     <!-- Step 1: Who -->
     <div id="step-1" class="card" style="animation: fadeUp 0.4s ease;">
-      <div class="card-label">01 — About you &amp; them</div>
-      <div class="field">
-        <label>Your name</label>
-        <input type="text" id="sender-name" placeholder="e.g. Priya" oninput="updateProgress()">
-      </div>
+      <div class="card-label">01 — Choose he/she</div>
       <div class="field">
         <label>Your gender</label>
         <select id="sender-gender">
@@ -672,8 +679,8 @@
         </div>
       </div>
       <div class="field">
-        <label>Their name</label>
-        <input type="text" id="receiver-name-input" placeholder="e.g. Arjun" oninput="updateProgress()">
+        <label>Receiver name (optional, for your inbox)</label>
+        <input type="text" id="receiver-name-hint" placeholder="e.g. Riya or Sita">
       </div>
       <div class="field">
         <label>Their gender</label>
@@ -772,7 +779,7 @@
     <div id="share-panel" class="share-panel">
       <div style="text-align: center; margin-bottom: 4px;">
         <div style="font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--cream);">Your link is ready ✦</div>
-        <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Share it with <span id="link-for-name" style="color: var(--gold-light);"></span></div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Share it for <span id="link-for-name" style="color: var(--gold-light);"></span></div>
       </div>
       <div class="share-url" id="share-url-display"></div>
       <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
@@ -809,7 +816,7 @@
 
     <!-- Hero question -->
     <div class="receiver-hero" id="receiver-hero">
-      <div class="receiver-from">From <span id="r-sender-name">someone</span></div>
+      <div class="receiver-from">From <span id="r-sender-name">He/She</span></div>
       <div class="receiver-name" id="r-receiver-name"></div>
       <div class="receiver-avatar" id="receiver-avatar">🧑</div>
       <div class="receiver-question" id="r-question">Loading your moment...</div>

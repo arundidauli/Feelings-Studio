@@ -165,6 +165,12 @@ body.mood-no {
   margin-bottom: 6px;
 }
 
+.answer-row-person {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f5ede0;
+}
+
 .answer-row-question {
   font-size: 13px;
   color: #f5ede0;
@@ -331,5 +337,14 @@ body.mood-no {
   }
   .fx-heart {
     font-size: 15px;
+  }
+  .answer-row-top {
+    font-size: 13px;
+    color: rgba(240, 232, 224, 0.86);
+  }
+  .answer-row-question,
+  .answer-row-reply {
+    font-size: 14px;
+    line-height: 1.6;
   }
 }

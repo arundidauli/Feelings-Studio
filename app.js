@@ -8,6 +8,7 @@ let currentLang = "hinglish";
 let currentTargetStyle = "neutral";
 let currentRequestId = "";
 let currentSenderToken = "";
+let currentReceiverNameHint = "";
 let selectedInterest = "";
 const moodClasses = ["mood-default", "mood-yes", "mood-softyes", "mood-maybe", "mood-later", "mood-no"];
 const DIRECT_ANSWER_API_URL = window.FEELINGS_ANSWER_API_URL || "";
@@ -15,6 +16,7 @@ const SUPABASE_URL = window.FEELINGS_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = window.FEELINGS_SUPABASE_ANON_KEY || "";
 const SENT_REQUESTS_KEY = "feelings_sent_requests_v1";
 const SENDER_TOKEN_KEY = "feelings_sender_token_v1";
+const LOCAL_RESPONSES_KEY = "feelings_local_responses_v1";
 let bubbleResizeTimer = null;
 const GENDER_QUESTION_BOOST = {
   hinglish: {
@@ -61,10 +63,8 @@ function switchTab(tab, tabEl) {
 
 function goToStep(n) {
   if (n === 2) {
-    const sn = document.getElementById("sender-name").value.trim();
-    const rn = document.getElementById("receiver-name-input").value.trim();
     const rel = document.getElementById("relationship").value;
-    if (!sn || !rn || !rel) return flashError("step-1");
+    if (!rel) return flashError("step-1");
   }
   if (n === 3) {
     const q = document.getElementById("custom-question").value.trim() || selectedQuestion;
@@ -139,26 +139,22 @@ function toggleMemory() {
 }
 
 function updateProgress() {
-  const sn = document.getElementById("sender-name").value.trim();
-  const rn = document.getElementById("receiver-name-input").value.trim();
   const rel = document.getElementById("relationship").value;
   const q = document.getElementById("custom-question").value.trim() || selectedQuestion;
   let p = 0;
-  if (sn) p += 25;
-  if (rn) p += 25;
-  if (rel) p += 25;
-  if (q) p += 25;
+  if (rel) p += 50;
+  if (q) p += 50;
   document.getElementById("progress-fill").style.width = p + "%";
 }
 
 function updatePreview() {
-  const sn = document.getElementById("sender-name").value.trim();
-  const rn = document.getElementById("receiver-name-input").value.trim();
+  const senderGender = document.getElementById("sender-gender").value || "unknown";
+  const receiverGender = document.getElementById("receiver-gender").value || "unknown";
   const q = document.getElementById("custom-question").value.trim() || selectedQuestion;
   const mem = document.getElementById("memory-text").value.trim();
 
-  document.getElementById("preview-from-line").textContent = `From ${sn}, with love`;
-  document.getElementById("preview-question-text").textContent = `${rn}, ${q}`;
+  document.getElementById("preview-from-line").textContent = `From ${formatGenderLabel(senderGender)}`;
+  document.getElementById("preview-question-text").textContent = `For ${formatGenderLabel(receiverGender)}: ${q}`;
 
   const memBlock = document.getElementById("preview-memory-block");
   const memText = document.getElementById("preview-memory-text");
@@ -171,8 +167,8 @@ function updatePreview() {
 }
 
 function generateLink() {
-  const sn = document.getElementById("sender-name").value.trim();
-  const rn = document.getElementById("receiver-name-input").value.trim();
+  const sn = "";
+  const rn = document.getElementById("receiver-name-hint").value.trim();
   const rel = document.getElementById("relationship").value;
   const q = document.getElementById("custom-question").value.trim() || selectedQuestion;
   const mem = document.getElementById("memory-text").value.trim();
@@ -193,8 +189,9 @@ function generateLink() {
   generatedLink = useShortLink
     ? `${window.location.href.split("?")[0]}?req=${encodeURIComponent(reqId)}`
     : `${window.location.href.split("?")[0]}?${params.toString()}`;
+  currentReceiverNameHint = rn;
   document.getElementById("share-url-display").textContent = generatedLink;
-  document.getElementById("link-for-name").textContent = rn;
+  document.getElementById("link-for-name").textContent = rn || formatGenderLabel(receiverGender);
   storeSentRequest({
     request_id: reqId,
     to: rn,
@@ -234,6 +231,12 @@ function genderTag(g) {
   return "";
 }
 
+function formatGenderLabel(g) {
+  if (g === "he") return "He";
+  if (g === "she") return "She";
+  return "He/She";
+}
+
 function getSenderToken() {
   let token = localStorage.getItem(SENDER_TOKEN_KEY);
   if (!token) {
@@ -247,8 +250,32 @@ function getSenderToken() {
 
 async function registerRequestInSupabase(entry) {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !currentSenderToken) return;
+  const fullPayload = {
+    request_id: entry.request_id,
+    sender_token: currentSenderToken,
+    sender_name: entry.sender_name,
+    receiver_name: entry.receiver_name,
+    question: entry.question,
+    relationship: entry.relationship || null,
+    tone: entry.tone || null,
+    lang: entry.lang || null,
+    target: entry.target || null,
+    memory_text: entry.memory_text || null,
+    sender_gender: entry.sender_gender || null,
+    receiver_gender: entry.receiver_gender || null,
+    sender_wa: entry.sender_wa || null,
+    created_at: new Date().toISOString()
+  };
+  const legacyPayload = {
+    request_id: entry.request_id,
+    sender_token: currentSenderToken,
+    sender_name: entry.sender_name || null,
+    receiver_name: entry.receiver_name || null,
+    question: entry.question || null,
+    created_at: new Date().toISOString()
+  };
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/requests`, {
+    const fullRes = await fetch(`${SUPABASE_URL}/rest/v1/requests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -256,23 +283,23 @@ async function registerRequestInSupabase(entry) {
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         Prefer: "resolution=merge-duplicates,return=minimal"
       },
-      body: JSON.stringify({
-        request_id: entry.request_id,
-        sender_token: currentSenderToken,
-        sender_name: entry.sender_name,
-        receiver_name: entry.receiver_name,
-        question: entry.question,
-        relationship: entry.relationship || null,
-        tone: entry.tone || null,
-        lang: entry.lang || null,
-        target: entry.target || null,
-        memory_text: entry.memory_text || null,
-        sender_gender: entry.sender_gender || null,
-        receiver_gender: entry.receiver_gender || null,
-        sender_wa: entry.sender_wa || null,
-        created_at: new Date().toISOString()
-      })
+      body: JSON.stringify(fullPayload)
     });
+    if (fullRes.ok) return;
+    // Backward compatibility for older requests schema.
+    if (fullRes.status === 400 || fullRes.status === 404) {
+      const legacyRes = await fetch(`${SUPABASE_URL}/rest/v1/requests`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          Prefer: "resolution=merge-duplicates,return=minimal"
+        },
+        body: JSON.stringify(legacyPayload)
+      });
+      if (legacyRes.ok) return;
+    }
   } catch (_) {
     // Non-blocking: receiver flow still works.
   }
@@ -294,6 +321,22 @@ function storeSentRequest(entry) {
   localStorage.setItem(SENT_REQUESTS_KEY, JSON.stringify(existing.slice(0, 200)));
 }
 
+function getLocalResponses() {
+  try {
+    const raw = localStorage.getItem(LOCAL_RESPONSES_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function storeLocalResponse(entry) {
+  const rows = getLocalResponses();
+  rows.unshift(entry);
+  localStorage.setItem(LOCAL_RESPONSES_KEY, JSON.stringify(rows.slice(0, 500)));
+}
+
 function formatAnswerTime(iso) {
   if (!iso) return "";
   const d = new Date(iso);
@@ -311,17 +354,17 @@ function renderInboxRows(rows, sentMap) {
   list.innerHTML = rows.map((r) => {
     const sent = sentMap.get(r.request_id) || {};
     const q = sent.question || r.question || "No question";
-    const to = sent.to || r.receiver_name || "Unknown";
+    const to = sent.to || r.receiver_name || formatGenderLabel(sent.receiver_gender || "unknown");
     const who = r.receiver_name || to;
     const at = formatAnswerTime(r.created_at);
     return `
       <div class="answer-row">
         <div class="answer-row-top">
-          <span>For: ${to}</span>
+          <span class="answer-row-person">${to}</span>
           <span>${at}</span>
         </div>
         <div class="answer-row-question">Q: ${q}</div>
-        <div class="answer-row-reply">A (${r.answer_type || "reply"}) by ${who}: ${r.answer_text || ""}</div>
+        <div class="answer-row-reply">${who} said <strong>${(r.answer_type || "reply").toUpperCase()}</strong>: ${r.answer_text || ""}</div>
       </div>
     `;
   }).join("");
@@ -338,8 +381,16 @@ async function loadMyAnswers() {
   }
   const ids = sent.map((s) => s.request_id).filter(Boolean);
   const sentMap = new Map(sent.map((s) => [s.request_id, s]));
+  const localRows = getLocalResponses()
+    .filter((r) => ids.includes(r.request_id))
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    if (localRows.length) {
+      if (status) status.textContent = `Found ${localRows.length} answers (local device).`;
+      renderInboxRows(localRows, sentMap);
+      return;
+    }
     if (status) status.textContent = "Supabase config missing in app runtime.";
     return;
   }
@@ -366,9 +417,24 @@ async function loadMyAnswers() {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
-    if (status) status.textContent = rows.length ? `Found ${rows.length} answers.` : "No answers yet for your links.";
-    renderInboxRows(rows, sentMap);
+    const mergedMap = new Map();
+    [...rows, ...localRows].forEach((r) => {
+      const key = `${r.request_id || ""}|${r.answer_type || ""}|${r.answer_text || ""}|${r.created_at || ""}`;
+      if (!mergedMap.has(key)) mergedMap.set(key, r);
+    });
+    const mergedRows = Array.from(mergedMap.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    if (status) {
+      status.textContent = mergedRows.length
+        ? `Found ${mergedRows.length} answers.`
+        : "No answers yet for your links.";
+    }
+    renderInboxRows(mergedRows, sentMap);
   } catch (err) {
+    if (localRows.length) {
+      if (status) status.textContent = `Supabase blocked. Showing ${localRows.length} local answer(s).`;
+      renderInboxRows(localRows, sentMap);
+      return;
+    }
     if (status) status.textContent = "Failed to load inbox. Check Supabase select policy.";
     if (list) list.innerHTML = "";
   }
@@ -394,7 +460,7 @@ function resetSender() {
   currentStep = 1;
   updateDots();
   document.getElementById("progress-fill").style.width = "0%";
-  ["sender-name", "sender-wa", "receiver-name-input", "custom-question", "memory-text"].forEach((id) => {
+  ["sender-wa", "receiver-name-hint", "custom-question", "memory-text"].forEach((id) => {
     document.getElementById(id).value = "";
   });
   document.getElementById("relationship").value = "";
@@ -405,6 +471,7 @@ function resetSender() {
   document.getElementById("memory-field").style.display = "none";
   selectedQuestion = "";
   selectedTone = "";
+  currentReceiverNameHint = "";
   setMoodTheme("default");
 }
 
@@ -427,6 +494,7 @@ async function loadReceiverFromURL() {
   senderWhatsapp = (params.get("wa") || "").replace(/[^\d]/g, "");
   let senderGender = params.get("sg") || "unknown";
   let receiverGender = params.get("rg") || "unknown";
+  let loadedFromReqStore = false;
 
   if (req && !params.get("q") && SUPABASE_URL && SUPABASE_ANON_KEY) {
     try {
@@ -437,7 +505,8 @@ async function loadReceiverFromURL() {
       const res = await fetch(url.toString(), {
         headers: {
           apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "x-request-id": req
         }
       });
       if (res.ok) {
@@ -453,6 +522,7 @@ async function loadReceiverFromURL() {
           senderWhatsapp = (row.sender_wa || senderWhatsapp || "").replace(/[^\d]/g, "");
           senderGender = row.sender_gender || senderGender;
           receiverGender = row.receiver_gender || receiverGender;
+          loadedFromReqStore = true;
         }
       }
     } catch (_) {
@@ -460,12 +530,23 @@ async function loadReceiverFromURL() {
     }
   }
 
-  document.getElementById("r-sender-name").textContent = from;
-  const receiverTag = genderTag(receiverGender);
-  document.getElementById("r-receiver-name").textContent = to ? `For ${to}${receiverTag ? ` (${receiverTag})` : ""}` : "";
-  const senderTag = genderTag(senderGender);
+  if (req && !loadedFromReqStore) {
+    const localReq = getSentRequests().find((item) => item.request_id === req);
+    if (localReq) {
+      from = formatGenderLabel(localReq.sender_gender || senderGender);
+      to = localReq.to || to;
+      q = localReq.question || q;
+      senderGender = localReq.sender_gender || senderGender;
+      receiverGender = localReq.receiver_gender || receiverGender;
+    }
+  }
+  currentReceiverNameHint = to || "";
+
   const senderFromEl = document.getElementById("r-sender-name");
-  if (senderFromEl && senderTag) senderFromEl.textContent = `${from} (${senderTag})`;
+  const senderLabel = formatGenderLabel(senderGender);
+  if (senderFromEl) senderFromEl.textContent = senderLabel;
+  const receiverLabel = formatGenderLabel(receiverGender);
+  document.getElementById("r-receiver-name").textContent = `For ${receiverLabel}`;
   document.getElementById("r-question").textContent = q;
   applyTargetAvatar();
 
@@ -478,13 +559,14 @@ async function loadReceiverFromURL() {
     memBlock.textContent = "";
   }
 
-  if (!params.get("from")) {
+  if (!params.get("from") && !params.get("req") && !params.get("q")) {
     currentLang = "hinglish";
     currentTargetStyle = "neutral";
     currentRequestId = "";
     senderWhatsapp = "";
-    document.getElementById("r-sender-name").textContent = "Priya";
-    document.getElementById("r-receiver-name").textContent = "For Arjun";
+    currentReceiverNameHint = "";
+    document.getElementById("r-sender-name").textContent = "He/She";
+    document.getElementById("r-receiver-name").textContent = "For He/She";
     document.getElementById("r-question").textContent = "Kal coffee pe chalte hain, no excuses?";
     memBlock.style.display = "block";
     memBlock.textContent = '"Remember when we used to talk for hours? Miss that vibe."';
@@ -758,12 +840,13 @@ async function submitDirectAnswer(type, answerText) {
     answer_type: type,
     answer_text: answerText,
     sender_name: document.getElementById("r-sender-name")?.textContent || "",
-    receiver_name: (document.getElementById("r-receiver-name")?.textContent || "").replace("For ", ""),
+    receiver_name: currentReceiverNameHint || (document.getElementById("r-receiver-name")?.textContent || "").replace("For ", ""),
     question: document.getElementById("r-question")?.textContent || "",
     lang: currentLang,
     target: currentTargetStyle,
     created_at: new Date().toISOString()
   };
+  storeLocalResponse(payload);
 
   const hasSupabase = SUPABASE_URL && SUPABASE_ANON_KEY;
   const hasCustomApi = DIRECT_ANSWER_API_URL;
@@ -897,7 +980,11 @@ window.addEventListener("load", () => {
   currentSenderToken = getSenderToken();
   initMoodBubbles();
   setMoodTheme("default");
-  if (window.location.search.includes("from=") || window.location.search.includes("q=")) {
+  if (
+    window.location.search.includes("from=") ||
+    window.location.search.includes("q=") ||
+    window.location.search.includes("req=")
+  ) {
     switchTab("receiver");
   }
   loadQuestions();
