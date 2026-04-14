@@ -189,7 +189,10 @@ function generateLink() {
   if (senderWa) params.set("wa", senderWa);
   if (mem) params.set("mem", mem);
 
-  generatedLink = `${window.location.href.split("?")[0]}?${params.toString()}`;
+  const useShortLink = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+  generatedLink = useShortLink
+    ? `${window.location.href.split("?")[0]}?req=${encodeURIComponent(reqId)}`
+    : `${window.location.href.split("?")[0]}?${params.toString()}`;
   document.getElementById("share-url-display").textContent = generatedLink;
   document.getElementById("link-for-name").textContent = rn;
   storeSentRequest({
@@ -205,7 +208,15 @@ function generateLink() {
     request_id: reqId,
     sender_name: sn,
     receiver_name: rn,
-    question: q
+    question: q,
+    relationship: rel,
+    tone,
+    lang,
+    target,
+    memory_text: mem,
+    sender_gender: senderGender,
+    receiver_gender: receiverGender,
+    sender_wa: senderWa
   });
 
   for (let i = 1; i <= 3; i++) {
@@ -251,6 +262,14 @@ async function registerRequestInSupabase(entry) {
         sender_name: entry.sender_name,
         receiver_name: entry.receiver_name,
         question: entry.question,
+        relationship: entry.relationship || null,
+        tone: entry.tone || null,
+        lang: entry.lang || null,
+        target: entry.target || null,
+        memory_text: entry.memory_text || null,
+        sender_gender: entry.sender_gender || null,
+        receiver_gender: entry.receiver_gender || null,
+        sender_wa: entry.sender_wa || null,
         created_at: new Date().toISOString()
       })
     });
@@ -395,18 +414,51 @@ function applyTargetAvatar() {
   avatar.textContent = map[currentTargetStyle] || map.neutral;
 }
 
-function loadReceiverFromURL() {
+async function loadReceiverFromURL() {
   const params = new URLSearchParams(window.location.search);
-  const from = params.get("from") || "Someone";
-  const to = params.get("to") || "";
-  const q = params.get("q") || "Would you want to spend some time with me?";
-  const mem = params.get("mem") || "";
+  const req = params.get("req") || "";
+  let from = params.get("from") || "Someone";
+  let to = params.get("to") || "";
+  let q = params.get("q") || "Would you want to spend some time with me?";
+  let mem = params.get("mem") || "";
   currentLang = params.get("lang") || "hinglish";
   currentTargetStyle = params.get("target") || "neutral";
-  currentRequestId = params.get("req") || "";
+  currentRequestId = req;
   senderWhatsapp = (params.get("wa") || "").replace(/[^\d]/g, "");
-  const senderGender = params.get("sg") || "unknown";
-  const receiverGender = params.get("rg") || "unknown";
+  let senderGender = params.get("sg") || "unknown";
+  let receiverGender = params.get("rg") || "unknown";
+
+  if (req && !params.get("q") && SUPABASE_URL && SUPABASE_ANON_KEY) {
+    try {
+      const url = new URL(`${SUPABASE_URL}/rest/v1/requests`);
+      url.searchParams.set("select", "sender_name,receiver_name,question,memory_text,lang,target,sender_wa,sender_gender,receiver_gender");
+      url.searchParams.set("request_id", `eq.${req}`);
+      url.searchParams.set("limit", "1");
+      const res = await fetch(url.toString(), {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+      if (res.ok) {
+        const rows = await res.json();
+        if (rows && rows.length) {
+          const row = rows[0];
+          from = row.sender_name || from;
+          to = row.receiver_name || to;
+          q = row.question || q;
+          mem = row.memory_text || mem;
+          currentLang = row.lang || currentLang;
+          currentTargetStyle = row.target || currentTargetStyle;
+          senderWhatsapp = (row.sender_wa || senderWhatsapp || "").replace(/[^\d]/g, "");
+          senderGender = row.sender_gender || senderGender;
+          receiverGender = row.receiver_gender || receiverGender;
+        }
+      }
+    } catch (_) {
+      // Fallback to query params/defaults
+    }
+  }
 
   document.getElementById("r-sender-name").textContent = from;
   const receiverTag = genderTag(receiverGender);

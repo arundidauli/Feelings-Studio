@@ -123,6 +123,7 @@ Important for safety:
 How it works:
 
 - App generates a `requestId` in the shared link.
+- If Supabase is configured, app now shares a short URL format: `?req=<requestId>` and loads full payload from `requests` table.
 - When receiver submits an answer, app sends POST payload.
 - Supabase payload fields: `request_id`, `answer_type`, `answer_text`, `sender_name`, `receiver_name`, `question`, `lang`, `target`, `created_at`.
 - Custom API payload fields: `requestId`, `answerType`, `answerText`, `senderName`, `receiverName`, `question`, `lang`, `target`, `timestamp`.
